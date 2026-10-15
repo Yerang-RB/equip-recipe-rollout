@@ -1,0 +1,104 @@
+# 데모 실행: SEED_PASSWORD=… POSTGRES_PASSWORD=… docker compose up --build  (README 「60초 시나리오」)
+# 게시 포트는 전부 127.0.0.1에만 연다(불변 조건 16) — scripts/deploy-gates.sh가 줄 모양으로 확인한다.
+# 컨테이너 안 서버는 compose 네트워크에서 서로 닿아야 하므로 0.0.0.0에 바인드한다(로컬 기본값은 127.0.0.1).
+name: equip-recipe-rollout
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: rollout
+      POSTGRES_USER: rollout
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD를 지정하라}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rollout -d rollout"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  console-mock:
+    build:
+      context: .
+      dockerfile: console-mock/Dockerfile
+    environment:
+      SERVER_PORT: "8090"
+      MOCK_FAIL_RATE: ${MOCK_FAIL_RATE:-0.10}
+      MOCK_CONSOLE_USER: console
+      MOCK_CONSOLE_PASS: ${SEED_PASSWORD:?SEED_PASSWORD를 지정하라}
+    ports:
+      - "127.0.0.1:8090:8090"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8090/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["--mode=api"]
+    environment:
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rollout
+      SPRING_DATASOURCE_USERNAME: rollout
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD를 지정하라}
+      APP_SEED_DEMO: "true"
+      SEED_PASSWORD: ${SEED_PASSWORD:?SEED_PASSWORD를 지정하라}
+      APP_WEB_ORIGIN: http://localhost:3000
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["--mode=worker"]
+    environment:
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8081"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rollout
+      SPRING_DATASOURCE_USERNAME: rollout
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD를 지정하라}
+    depends_on:
+      api:
+        condition: service_healthy
+      console-mock:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8081/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+
+  web:
+    build:
+      context: web
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      WS_ORIGIN: ws://localhost:8080
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

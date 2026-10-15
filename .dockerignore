@@ -1,0 +1,6 @@
+**/build
+.gradle
+.kotlin
+web
+_trash
+docs

@@ -1,0 +1,19 @@
+build/
+.gradle/
+.kotlin/
+*.log
+.env
+.attach_pid*
+node_modules/
+.next/
+
+# 로컬 실행 전용(호스트 포트 충돌 회피 등) — 공개 대상이 아니다
+compose.override.yaml
+
+# 리뷰어 worktree가 남긴 중간 초안 보관함. 참조되는 프로브 4종(_trash/2026-09-17-task9)만 추적한다
+_trash/agent-*
+_trash/orphan-*
+_trash/*duplicate*
+
+.idea/
+.vscode/

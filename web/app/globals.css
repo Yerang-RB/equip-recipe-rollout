@@ -1,0 +1,82 @@
+:root {
+  --bg: #f5f6f7;
+  --surface: #ffffff;
+  --ink: #1d2125;
+  --muted: #5f6b76;
+  --line: #dde1e5;
+  --accent: #1f6feb;
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --bad: #cf222e;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, -apple-system, "Malgun Gothic", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  font-feature-settings: "tnum";
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 설비 코드·잡 ID·파라미터·로그 */
+.mono, code, td.mono { font-family: var(--font-mono), ui-monospace, monospace; }
+
+a { color: var(--accent); }
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.top .brand { font-weight: 700; color: var(--ink); text-decoration: none; }
+.top nav { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.top nav a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.top nav a:hover { color: var(--ink); }
+
+.page { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 1rem; }
+h2 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1rem; }
+
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 0.85rem; }
+
+.badge { display: inline-block; padding: 0 0.5rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.badge.SUCCEEDED, .badge.ACTIVE, .badge.OK, .badge.APPLIED, .badge.RUNNING-eq { color: var(--ok); }
+.badge.FAILED, .badge.DENIED, .badge.ERROR, .badge.MAINTENANCE { color: var(--bad); }
+.badge.PARTIAL, .badge.CLAIMED, .badge.DRAFT, .badge.STOPPED { color: var(--warn); }
+.badge.PENDING, .badge.CANCELLED, .badge.RETIRED, .badge.NO_CHANGE { color: var(--muted); }
+
+form.stack { display: grid; gap: 0.75rem; max-width: 420px; }
+label { display: grid; gap: 0.25rem; font-weight: 500; }
+input, select, button { font: inherit; }
+input, select { padding: 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+button { padding: 0.45rem 1rem; border: 1px solid var(--accent); border-radius: 4px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+button.secondary { background: var(--surface); color: var(--accent); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.actions { display: flex; gap: 0.5rem; margin: 1rem 0; }
+.error { color: var(--bad); }
+.muted { color: var(--muted); }
+
+.bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+
+.checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+.checks label { display: flex; gap: 0.5rem; align-items: center; font-weight: 400; }
+
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { display: grid; grid-template-columns: 11rem 7rem 1fr auto; gap: 1rem; padding: 0.5rem 0.75rem; background: var(--surface); border: 1px solid var(--line); border-top: 0; }
+.timeline li:first-child { border-top: 1px solid var(--line); }
